@@ -31,6 +31,16 @@ def opponent_move(board, row, column):
         return board[:index] + OPPONENT_SIGN + board[index + 1:]
     return board
 
+# find best move
+def best_moves_from_board(board, sign):
+    move_list = []
+    utilities = utility_matrix(board)
+    max_utility = max(utilities)
+    for i, v in enumerate(board):
+        if utilities[i] == max_utility:
+            move_list.append(board[:i] + sign + board[i + 1:])
+    return move_list
+
 # all moves
 def all_moves_from_board(board, sign):
     move_list = []
@@ -40,6 +50,14 @@ def all_moves_from_board(board, sign):
             move_list.append(new_board)
             if game_won_by(new_board) == AI_SIGN:
                 return [new_board]
+    return move_list
+
+# all moves from list
+def all_moves_from_board_list(board_list, sign):
+    move_list = []
+    get_moves = best_moves_from_board if sign == AI_SIGN else all_moves_from_board
+    for board in board_list:
+        move_list.extend(get_moves(board, sign))
     return move_list
 
 # ai player
@@ -56,6 +74,35 @@ def game_won_by(board):
         if board[index[0]] == board[index[1]] == board[index[2]] != EMPTY_SIGN:
             return board[index[0]]
     return EMPTY_SIGN
+
+def init_utility_matrix(board):
+    return [0 if cell == EMPTY_SIGN else -1 for cell in board]
+
+def generate_add_score(utilities, i, j, k):
+    def add_score(points):
+        if utilities[i] >= 0:
+            utilities[i] += points
+        if utilities[j] >= 0:
+            utilities[j] += points
+        if utilities[k] >= 0:
+            utilities[k] += points
+    return add_score
+
+def utility_matrix(board):
+    utilities = init_utility_matrix(board)
+    for [i, j, k] in combo_indices:
+        add_score = generate_add_score(utilities, i, j, k)
+        triple = [board[i], board[j], board[k]]
+        if triple.count(EMPTY_SIGN) == 1:
+            if triple.count(AI_SIGN) == 2:
+                add_score(1000)
+            elif triple.count(OPPONENT_SIGN) == 2:
+                add_score(100)
+        elif triple.count(EMPTY_SIGN) == 2 and triple.count(AI_SIGN) == 1:
+            add_score(10)
+        elif triple.count(EMPTY_SIGN) == 3:
+            add_score(1)
+    return utilities
 
 # start game
 def start_game():
