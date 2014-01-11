@@ -36,12 +36,19 @@ def all_moves_from_board(board, sign):
     move_list = []
     for i, v in enumerate(board):
         if v == EMPTY_SIGN:
-            move_list.append(board[:i] + sign + board[i + 1:])
+            new_board = board[:i] + sign + board[i + 1:]
+            move_list.append(new_board)
+            if game_won_by(new_board) == AI_SIGN:
+                return [new_board]
     return move_list
 
 # ai player
 def ai_move(board):
-    return choice(all_moves_from_board(board, AI_SIGN))
+    new_boards = all_moves_from_board(board, AI_SIGN)
+    for new_board in new_boards:
+        if game_won_by(new_board) == AI_SIGN:
+            return new_board
+    return choice(new_boards)
 
 # game winner
 def game_won_by(board):
